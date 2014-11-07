@@ -7,6 +7,25 @@
     var dom = $(elt)
     var _dialog = dom.find('.dialog')
     var _animating = false
+
+    var TOC_JSON = {"total_rows":16,"offset":0,"rows":[
+                    {"id":"the-abominable-snowman","key":["cyoa","abominable-snowman"],"value":"The Abominable Snowman"},
+                    {"id":"case-of-the-silk-king","key":["cyoa","case-of-the-silk-king"],"value":"Case Of The Silk King"},
+                    {"id":"the-cave-of-time","key":["cyoa","cave-of-time"],"value":"The Cave of Time"},
+                    {"id":"the-cavern-of-doom","key":["cyoa","cavern-of-doom"],"value":"The Cavern of Doom"},
+                    {"id":"date-with-destiny","key":["cyoa","date-with-destiny"],"value":"Date with Destiny "},
+                    {"id":"house-of-danger","key":["cyoa","house-of-danger"],"value":"House of Danger"},
+                    {"id":"inside-ufo-54-40","key":["cyoa","inside-ufo-54-40"],"value":"Inside UFO 54-40"},
+                    {"id":"journey-under-the-sea","key":["cyoa","journey-under-the-sea"],"value":"Journey Under the Sea"},
+                    {"id":"the-mystery-of-chimney-rock","key":["cyoa","mystery-of-chimney-rock"],"value":"The Mystery of Chimney Rock"},
+                    {"id":"mystery-of-the-secret-room","key":["cyoa","mystery-of-the-secret-room"],"value":"Mystery of the Secret Room"},
+                    {"id":"the-mystery-of-ura-senke","key":["cyoa","mystery-of-ura-senke"],"value":"The Mystery of Ura Senke"},
+                    {"id":"a-new-hope","key":["cyoa","new-hope"],"value":"A New Hope"},
+                    {"id":"third-planet-from-altair","key":["cyoa","third-planet-from-altair"],"value":"Third Planet from Altair"},
+                    {"id":"cube","key":["doodle","cube"],"value":"Cube"},
+                    {"id":"python-grammar","key":["doodle","python-grammar"],"value":"Python Grammar"},
+                    {"id":"snowflake","key":["doodle","snowflake"],"value":"Snowflake"}
+                    ]};
     
     var that = {
       init:function(){
@@ -14,9 +33,9 @@
         dom.find('.ctrl > a').live('click', that.menuClick)
         _dialog.find('li>a').live('click', that.exampleClick)
         
-        $.getJSON("library/toc.json", function(resp){
+        //$.getJSON("library/toc.json", function(resp){
           _dialog.append($("<h1>Choose Your Own Adventure</h1>"))
-          $.each(resp.rows, function(i, row){
+          $.each(TOC_JSON.rows, function(i, row){
             if (row.key[0]!='cyoa') return
             var title = row.value
             var stub = row.id
@@ -27,7 +46,7 @@
           })
 
           _dialog.append($("<h1>Doodles</h1>"))
-          $.each(resp.rows, function(i, row){
+          $.each(TOC_JSON.rows, function(i, row){
             if (row.key[0]!='doodle') return
             var title = row.value
             var stub = row.id
@@ -39,13 +58,13 @@
 
 
           if ($.address.value()=="/"){
-            var n = resp.total_rows
+            var n = TOC_JSON.total_rows
             var books = _dialog.find('a')
-            var randBook = resp.rows[Math.floor(Math.random()*n)].id
+            var randBook = TOC_JSON.rows[Math.floor(Math.random()*n)].id
             $.address.value(randBook)
           }
           
-        })
+        //})
         
         $.address.change(that.navigate)
 

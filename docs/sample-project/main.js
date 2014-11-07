@@ -130,6 +130,7 @@
     sys.renderer = Renderer("#viewport") // our newly created renderer will have its .init() method called shortly by sys...
 
     // add some nodes to the graph and watch it go...
+    sys.addNode('a',{label: 'oi', color: '#765'})
     sys.addEdge('a','b')
     sys.addEdge('a','c')
     sys.addEdge('a','d')
