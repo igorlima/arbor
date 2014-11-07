@@ -178,12 +178,12 @@
         vertexName = function(vertex) {
           return vertex.path().split('/').slice(-1).pop();
         },
-        VETEX_APPBASE = {},
+        VERTEX_APPBASE = {},
         EDGE_APPBASE = {},
-        NAMESPACE = "misc",
+        NAMESPACE = "graph",
         removeVertex = function(vertex) {
           var name = vertexName(vertex);
-          delete VETEX_APPBASE[name];
+          delete VERTEX_APPBASE[name];
           delete EDGE_APPBASE[name];
           $.each( EDGE_APPBASE, function(edge) {
             delete EDGE_APPBASE[edge][name];
@@ -192,7 +192,7 @@
         dataListener = function(vertex) {
           var name = vertexName(vertex);
           vertex.on('properties', function(err, vertex, data) {
-            VETEX_APPBASE[name] = data.properties();
+            VERTEX_APPBASE[name] = data.properties();
             showAppbaseInfo();
           });
         },
@@ -219,18 +219,18 @@
         },
         addListeners = function(vertex) {
           var name = vertexName(vertex);
-          if (VETEX_APPBASE[name]) {
+          if (VERTEX_APPBASE[name]) {
             return;
           }
 
-          VETEX_APPBASE[name] = {};
+          VERTEX_APPBASE[name] = {};
           dataListener(vertex);
           edgeListener(vertex);
           showAppbaseInfo();
         },
-        stringfyNodes = function( VETEX_APPBASE ) {
+        stringfyNodes = function( VERTEX_APPBASE ) {
           var str = "";
-          $.each( VETEX_APPBASE, function(key, value) {
+          $.each( VERTEX_APPBASE, function(key, value) {
             str += key + " {";
             $.each( value, function(key, value) {
               str += key + ":" + value + ", "
@@ -249,11 +249,11 @@
           } );
           return str;
         },
-        stringfy = function( EDGE_APPBASE, VETEX_APPBASE ) {
-          return stringfyEdges(EDGE_APPBASE) + "\n" + stringfyNodes(VETEX_APPBASE);
+        stringfy = function( EDGE_APPBASE, VERTEX_APPBASE ) {
+          return stringfyEdges(EDGE_APPBASE) + "\n" + stringfyNodes(VERTEX_APPBASE);
         },
         showAppbaseInfo = function() {
-          $('#code').val( stringfy( EDGE_APPBASE, VETEX_APPBASE ) );
+          $('#code').val( stringfy( EDGE_APPBASE, VERTEX_APPBASE ) );
           mcp.updateGraph(null, false);
         };
 
@@ -261,7 +261,7 @@
       var src_txt = $('#code').val(),
           network = parse(src_txt),
           diffEdge = $.diff(EDGE_APPBASE, network.edges ),
-          diffVertex = $.diff(VETEX_APPBASE, network.nodes );
+          diffVertex = $.diff(VERTEX_APPBASE, network.nodes );
 
       $.each( diffEdge.add, function(vertex, linkedVertexes) {
         var vref = Appbase.ns(NAMESPACE).v(vertex);
@@ -292,7 +292,7 @@
       } );
     };
 
-    Appbase.credentials("sample_app", "3541452aca4292271c9907b9cabdd850")
+    Appbase.credentials("graphviz", "d3d66439a98a0cac8a4cf6bcf3546110")
     //$.address.value() || 'Users'
     Appbase.ns(NAMESPACE).on('vertex_added', function(err, vertex){
       addListeners(vertex);
@@ -301,7 +301,7 @@
       removeVertex(vertex);
     });
 
-    window.VETEX_APPBASE = VETEX_APPBASE;
+    window.VERTEX_APPBASE = VERTEX_APPBASE;
     window.EDGE_APPBASE = EDGE_APPBASE;
     window.stringfy = stringfy;
   });
