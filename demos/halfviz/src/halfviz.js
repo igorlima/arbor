@@ -180,7 +180,7 @@
         },
         VERTEX_APPBASE = {},
         EDGE_APPBASE = {},
-        NAMESPACE = "graph",
+        NAMESPACE = "graphfoo",
         removeVertex = function(vertex) {
           var name = vertexName(vertex);
           delete VERTEX_APPBASE[name];
@@ -297,7 +297,7 @@
     Appbase.ns(NAMESPACE).on('vertex_added', function(err, vertex){
       addListeners(vertex);
     });
-    Appbase.ns(NAMESPACE).on('vertex_destroyed', function(err, vertex){
+    Appbase.ns(NAMESPACE).on('vertex_removed', function(err, vertex) {
       removeVertex(vertex);
     });
 
