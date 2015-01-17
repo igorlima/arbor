@@ -175,57 +175,48 @@
 
   $(document).ready(function(){
     var mcp = HalfViz("#halfviz"),
-        vertexName = function(vertex) {
-          return vertex.path().split('/').slice(-1).pop();
-        },
         VERTEX_APPBASE = {},
         EDGE_APPBASE = {},
         NAMESPACE = "graphfoo",
-        removeVertex = function(vertex) {
-          var name = vertexName(vertex);
-          delete VERTEX_APPBASE[name];
-          delete EDGE_APPBASE[name];
+        removeVertex = function(vRef) {
+          delete VERTEX_APPBASE[vRef.name()];
+          delete EDGE_APPBASE[vRef.name()];
           $.each( EDGE_APPBASE, function(edge) {
-            delete EDGE_APPBASE[edge][name];
+            delete EDGE_APPBASE[edge][vRef.name()];
           });
         },
-        dataListener = function(vertex) {
-          var name = vertexName(vertex);
-          vertex.on('properties', function(err, vertex, data) {
-            VERTEX_APPBASE[name] = data.properties();
+        dataListener = function(vRef) {
+          vRef.on('properties', function(err, r, data) {
+            if(err) return;
+            VERTEX_APPBASE[vRef.name()] = data.properties();
             showAppbaseInfo();
           });
         },
-        edgeListener = function(vertex) {
-          vertex.on('edge_added', function(err, linkedVertex) {
-            var nameVertex = vertexName(vertex),
-                nameLinkedVertex = vertexName(linkedVertex),
-                edge = {};
+        edgeListener = function(vRef) {
+          vRef.on('edge_added', function(err, edgeRef) {
+            if(err) return;
+            var edges = {};
+            edges[vRef.name()] = EDGE_APPBASE[vRef.name()] || {};
+            edges[vRef.name()][edgeRef.name()] = {directed: true};
+            $.extend( EDGE_APPBASE, edges );
 
-            edge[nameVertex] = EDGE_APPBASE[nameVertex] || {};
-            edge[nameVertex][nameLinkedVertex] = {directed: true};
-            $.extend( EDGE_APPBASE, edge );
-
-            addListeners(linkedVertex);
+            addListeners(edgeRef);
             showAppbaseInfo();
           });
 
-          vertex.on('edge_removed', function(err, linkedVertex){
-            var nameVertex = vertexName(vertex),
-                nameLinkedVertex = vertexName(linkedVertex);
-            delete EDGE_APPBASE[nameVertex][nameLinkedVertex];
+          vRef.on('edge_removed', function(err, edgeRef){
+            delete EDGE_APPBASE[vRef.name()][edgeRef.name()];
             showAppbaseInfo();
           });
         },
-        addListeners = function(vertex) {
-          var name = vertexName(vertex);
-          if (VERTEX_APPBASE[name]) {
+        addListeners = function(vRef) {
+          if (VERTEX_APPBASE[vRef.name()]) {
             return;
           }
 
-          VERTEX_APPBASE[name] = {};
-          dataListener(vertex);
-          edgeListener(vertex);
+          VERTEX_APPBASE[vRef.name()] = {};
+          dataListener(vRef);
+          edgeListener(vRef);
           showAppbaseInfo();
         },
         stringfyNodes = function( VERTEX_APPBASE ) {
@@ -263,42 +254,40 @@
           diffEdge = $.diff(EDGE_APPBASE, network.edges ),
           diffVertex = $.diff(VERTEX_APPBASE, network.nodes );
 
-      $.each( diffEdge.add, function(vertex, linkedVertexes) {
-        var vref = Appbase.ns(NAMESPACE).v(vertex);
-        $.each(linkedVertexes, function(linkedVertex) {
-           var lvref = Appbase.ns(NAMESPACE).v(linkedVertex);
-           vref.setEdge( linkedVertex, lvref );
+      $.each( diffEdge.add, function(vRef, outVertices) {
+        var vref = Appbase.ns(NAMESPACE).v(vRef);
+        $.each(outVertices, function(outVId) {
+           var lvref = Appbase.ns(NAMESPACE).v(outVId);
+           vref.setEdge( outVId, lvref );
         } );
       } );
 
-      $.each( diffEdge.del, function(vertex, linkedVertexes) {
-        var vref = Appbase.ns(NAMESPACE).v(vertex);
-        $.each(linkedVertexes, function(linkedVertex) {
-           var lvref = Appbase.ns(NAMESPACE).v(linkedVertex);
-           vref.removeEdge( linkedVertex );
+      $.each( diffEdge.del, function(vertexId, linkedVertices) {
+        var vref = Appbase.ns(NAMESPACE).v(vertexId);
+        $.each(linkedVertices, function(linkedVertexId) {
+            vref.removeEdge( linkedVertexId );
         } );
       } );
 
-      $.each( diffVertex.add, function(vertex, data) {
-        Appbase.ns(NAMESPACE).v(vertex).setData( data );
+      $.each( diffVertex.add, function(vertexId, data) {
+        Appbase.ns(NAMESPACE).v(vertexId).setData( data );
       } );
 
-      $.each( diffVertex.mod, function(vertex, data) {
-        Appbase.ns(NAMESPACE).v(vertex).setData( data );
+      $.each( diffVertex.mod, function(vertexId, data) {
+        Appbase.ns(NAMESPACE).v(vertexId).setData( data );
       } );
 
-      $.each( diffVertex.del, function(vertex) {
-        Appbase.ns(NAMESPACE).v(vertex).destroy();
+      $.each( diffVertex.del, function(vertexId) {
+        Appbase.ns(NAMESPACE).v(vertexId).destroy();
       } );
     };
 
-    Appbase.credentials("graphviz", "d3d66439a98a0cac8a4cf6bcf3546110")
-    //$.address.value() || 'Users'
-    Appbase.ns(NAMESPACE).on('vertex_added', function(err, vertex){
-      addListeners(vertex);
+    Appbase.credentials("graphviz", "d3d66439a98a0cac8a4cf6bcf3546110");
+    Appbase.ns(NAMESPACE).on('vertex_added', function(err, vertexRef){
+      addListeners(vertexRef);
     });
-    Appbase.ns(NAMESPACE).on('vertex_removed', function(err, vertex) {
-      removeVertex(vertex);
+    Appbase.ns(NAMESPACE).on('vertex_removed', function(err, vertexRef) {
+      removeVertex(vertexRef);
     });
 
     window.VERTEX_APPBASE = VERTEX_APPBASE;
